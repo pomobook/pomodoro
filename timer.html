@@ -1,0 +1,655 @@
+<html><head><base href="/" />
+    <meta charset="UTF-8">
+    <title>GrowthMindset Pomodoro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --secondary: #2d2d2d;
+            --accent: #3498db;  /* Changed from red to blue */
+            --text: #ffffff;
+            --break-primary: #1a4666;
+            --break-secondary: #234b6b;
+            --break-text: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary);
+            color: var(--text);
+            font-family: 'Poppins', sans-serif;  /* Changed from Roboto to Poppins */
+            min-height: 100vh;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .header-buttons {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;  /* Changed from right: 50% */
+            transform: none;  /* Removed translateX */
+            display: flex;
+            gap: 1rem;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .icon-button:hover {
+            transform: scale(1.1);
+        }
+
+        .timer-container {
+            background-color: var(--secondary);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.5s ease;
+        }
+
+        .current-time {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .current-time.fullscreen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12rem;
+            z-index: 1001;
+            background-color: var(--primary);
+            padding: 2rem;
+            border-radius: 15px;
+        }
+
+        .digital-clock {
+            font-size: 8rem;  /* Increased from 6rem */
+            font-weight: bold;
+            color: var(--accent);
+            cursor: pointer;
+            transition: color 0.5s ease, transform 0.3s ease;
+        }
+
+        .digital-clock.fullscreen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12rem;
+            z-index: 1000;
+            background-color: var(--primary);
+            padding: 2rem;
+            border-radius: 15px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .controls.fullscreen {
+            position: fixed;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: var(--text);
+            border: none;
+            padding: 1rem 2rem;  /* Increased from 0.8rem 1.5rem */
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s ease;
+            font-size: 1.1rem;  /* Increased font size */
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .mode-selector {
+            margin: 1rem 0;
+        }
+
+        .mode-selector button {
+            background-color: var(--secondary);
+            margin: 0 0.5rem;
+        }
+
+        .mode-selector button.active {
+            background-color: var(--accent);
+        }
+
+        .settings {
+            margin: 2rem 0;
+        }
+
+        input[type="number"] {
+            background-color: var(--secondary);
+            color: var(--text);
+            border: 1px solid var(--accent);
+            padding: 0.5rem;
+            border-radius: 5px;
+            width: 100px;
+        }
+
+        .quote {
+            font-style: italic;
+            text-align: center;
+            margin: 2rem 0;
+            padding: 1rem;
+            background-color: var(--secondary);
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .task-list {
+            background-color: var(--secondary);
+            border-radius: 15px;
+            padding: 2rem;
+        }
+
+        .task-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background-color: var(--primary);
+            color: var(--text);
+            border: 1px solid var(--accent);
+            padding: 0.5rem;
+            border-radius: 5px;
+        }
+
+        .tasks {
+            list-style: none;
+            padding: 0;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background-color: var(--primary);
+            border-radius: 5px;
+        }
+
+        .task-summary {
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--primary);
+            border-radius: 5px;
+            border-left: 4px solid var(--accent);
+        }
+
+        /* Add this to the existing CSS */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary);
+            z-index: 999;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: var(--secondary);
+            margin: 5% auto;
+            padding: 2rem;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .pomodoro-explanation {
+            background-color: var(--secondary);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            transition: background-color 0.5s ease;
+        }
+
+        .explanation-content {
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .explanation-content h3 {
+            color: var(--accent);
+            margin: 1.5rem 0 1rem 0;
+        }
+
+        .explanation-content ol, 
+        .explanation-content ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .explanation-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .pro-tip {
+            background-color: var(--primary);
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+            margin-top: 1.5rem;
+        }
+
+        /* Image styling */
+        .study-image {
+            width: 100%;
+            max-width: 800px;
+            margin: 2rem auto;
+            display: block;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="overlay" class="overlay"></div>
+    <div class="container">
+        <div class="header-buttons">
+            <button class="icon-button" id="infoButton">ℹ️</button>
+            <button class="icon-button" id="settingsButton">⚙️</button>
+        </div>
+        <div class="timer-container">
+            <div class="current-time" id="currentTime">12:00</div>
+            <div class="mode-selector">
+                <button id="studyMode" class="active">Study Mode</button>
+                <button id="breakMode">Break Mode</button>
+            </div>
+            <div class="digital-clock" id="timer">25:00</div>
+            <div class="controls">
+                <button id="start">Start</button>
+                <button id="pause">Pause</button>
+                <button id="reset">Reset</button>
+            </div>
+        </div>
+
+        <div class="quote">
+            "Success isn't always about greatness. It's about consistency. Consistent hard work leads to success. Greatness will come." - Dwayne Johnson
+        </div>
+
+        <div class="task-list">
+            <h2>Task List</h2>
+            <div class="task-input">
+                <input type="text" id="taskInput" placeholder="Enter task...">
+                <input type="number" id="taskTime" placeholder="Minutes" min="1">
+                <button id="addTask">Add Task</button>
+            </div>
+            <div class="task-summary" id="taskSummary">
+                Total time: 0 minutes<br>
+                Estimated completion: --:--
+            </div>
+            <ul class="tasks" id="tasksList"></ul>
+        </div>
+
+        <div id="infoModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="closeInfo">&times;</span>
+                <div class="pomodoro-explanation">
+                    <h2>The Pomodoro Technique</h2>
+                    <div class="explanation-content">
+                        <p>The Pomodoro Technique is a time management method developed by Francesco Cirillo that uses a timer to break work into focused intervals, traditionally 25 minutes in length, separated by short breaks.</p>
+                        
+                        <h3>How it Works:</h3>
+                        <ol>
+                            <li>Choose a task to work on</li>
+                            <li>Set the timer for 25 minutes (one "Pomodoro")</li>
+                            <li>Work on the task until the timer rings</li>
+                            <li>Take a short 5-minute break</li>
+                            <li>After 4 Pomodoros, take a longer 15-30 minute break</li>
+                        </ol>
+
+                        <h3>Benefits:</h3>
+                        <ul>
+                            <li>Increases focus and concentration</li>
+                            <li>Reduces mental fatigue</li>
+                            <li>Improves productivity</li>
+                            <li>Helps maintain motivation</li>
+                            <li>Creates a better work-life balance</li>
+                        </ul>
+
+                        <p class="pro-tip">Pro tip: Stay committed to the full Pomodoro - no distractions or interruptions. If something comes up, write it down and address it during your break.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="closeSettings">&times;</span>
+                <h2>Settings</h2>
+                <div class="settings">
+                    <label>Work Time (minutes): 
+                        <input type="number" id="workTime" value="25" min="1">
+                    </label>
+                    <label>Break Time (minutes): 
+                        <input type="number" id="breakTime" value="5" min="1">
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <script>
+        // Current time display
+        const currentTimeDisplay = document.getElementById('currentTime');
+        
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            currentTimeDisplay.textContent = `${hours}:${minutes}`;
+        }
+
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+
+        currentTimeDisplay.addEventListener('click', () => {
+            currentTimeDisplay.classList.toggle('fullscreen');
+            document.getElementById('overlay').style.display = 
+                currentTimeDisplay.classList.contains('fullscreen') ? 'block' : 'none';
+        });
+
+        // Mode selection
+        const studyModeBtn = document.getElementById('studyMode');
+        const breakModeBtn = document.getElementById('breakMode');
+
+        studyModeBtn.addEventListener('click', () => {
+            studyModeBtn.classList.add('active');
+            breakModeBtn.classList.remove('active');
+            isBreak = false;
+            timeLeft = workTimeInput.value * 60;
+            updateDisplay();
+            updateTheme(false);
+        });
+
+        breakModeBtn.addEventListener('click', () => {
+            breakModeBtn.classList.add('active');
+            studyModeBtn.classList.remove('active');
+            isBreak = true;
+            timeLeft = breakTimeInput.value * 60;
+            updateDisplay();
+            updateTheme(true);
+        });
+
+        // Update mode buttons when timer switches
+        function updateModeButtons() {
+            if (isBreak) {
+                breakModeBtn.classList.add('active');
+                studyModeBtn.classList.remove('active');
+            } else {
+                studyModeBtn.classList.add('active');
+                breakModeBtn.classList.remove('active');
+            }
+        }
+
+        // Theme update
+        function updateTheme(isBreakMode) {
+            const body = document.body;
+            const timerContainer = document.querySelector('.timer-container');
+            const digitalClock = document.querySelector('.digital-clock');
+            const taskList = document.querySelector('.task-list');
+            const pomodoroExplanation = document.querySelector('.pomodoro-explanation');
+            
+            if (isBreakMode) {
+                body.style.backgroundColor = 'var(--break-primary)';
+                body.style.color = 'var(--break-text)';
+                timerContainer.style.backgroundColor = 'var(--break-secondary)';
+                taskList.style.backgroundColor = 'var(--break-secondary)';
+                pomodoroExplanation.style.backgroundColor = 'var(--break-secondary)';
+                digitalClock.style.color = 'var(--break-text)';
+            } else {
+                body.style.backgroundColor = 'var(--primary)';
+                body.style.color = 'var(--text)';
+                timerContainer.style.backgroundColor = 'var(--secondary)';
+                taskList.style.backgroundColor = 'var(--secondary)';
+                pomodoroExplanation.style.backgroundColor = 'var(--secondary)';
+                digitalClock.style.color = 'var(--accent)';
+            }
+        }
+
+        // Modified timer functions
+        let isRunning = false;
+        let timeLeft;
+        let timer;
+        let isBreak = false;
+
+        const timerDisplay = document.getElementById('timer');
+        const startButton = document.getElementById('start');
+        const pauseButton = document.getElementById('pause');
+        const resetButton = document.getElementById('reset');
+        const workTimeInput = document.getElementById('workTime');
+        const breakTimeInput = document.getElementById('breakTime');
+
+        function initTimer() {
+            timeLeft = workTimeInput.value * 60;
+            updateDisplay();
+            updateModeButtons();
+        }
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                timer = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay();
+                    if (timeLeft === 0) {
+                        if (!isBreak) {
+                            timeLeft = breakTimeInput.value * 60;
+                            isBreak = true;
+                            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play();
+                            updateTheme(true);
+                        } else {
+                            timeLeft = workTimeInput.value * 60;
+                            isBreak = false;
+                            updateTheme(false);
+                        }
+                        updateModeButtons();
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            clearInterval(timer);
+            isRunning = false;
+        }
+
+        function resetTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            isBreak = false;
+            initTimer();
+        }
+
+        // Add event listeners for work/break time inputs
+        workTimeInput.addEventListener('change', () => {
+            if (!isRunning && !isBreak) {
+                timeLeft = workTimeInput.value * 60;
+                updateDisplay();
+            }
+        });
+
+        breakTimeInput.addEventListener('change', () => {
+            if (!isRunning && isBreak) {
+                timeLeft = breakTimeInput.value * 60;
+                updateDisplay();
+            }
+        });
+
+        // Event listeners
+        startButton.addEventListener('click', startTimer);
+        pauseButton.addEventListener('click', pauseTimer);
+        resetButton.addEventListener('click', resetTimer);
+        timerDisplay.addEventListener('click', () => {
+            timerDisplay.classList.toggle('fullscreen');
+            document.querySelector('.controls').classList.toggle('fullscreen');
+            document.getElementById('overlay').style.display = 
+                timerDisplay.classList.contains('fullscreen') ? 'block' : 'none';
+        });
+
+        // Task management
+        const taskInput = document.getElementById('taskInput');
+        const taskTimeInput = document.getElementById('taskTime');
+        const addTaskButton = document.getElementById('addTask');
+        const tasksList = document.getElementById('tasksList');
+
+        function calculateTaskTotals() {
+            const tasks = document.querySelectorAll('.task-item');
+            let totalMinutes = 0;
+            
+            tasks.forEach(task => {
+                const timeText = task.querySelector('span').textContent;
+                const minutes = parseInt(timeText.match(/\((\d+) minutes\)/)[1]);
+                totalMinutes += minutes;
+            });
+            
+            // Calculate completion time
+            const now = new Date();
+            const completionTime = new Date(now.getTime() + totalMinutes * 60000);
+            const hours = completionTime.getHours().toString().padStart(2, '0');
+            const minutes = completionTime.getMinutes().toString().padStart(2, '0');
+            
+            // Update summary
+            const summaryDiv = document.getElementById('taskSummary');
+            summaryDiv.innerHTML = `
+                Total time: ${totalMinutes} minutes<br>
+                Estimated completion: ${hours}:${minutes}
+            `;
+        }
+
+        function addTask() {
+            const taskText = taskInput.value;
+            const taskTime = taskTimeInput.value;
+            
+            if (taskText && taskTime) {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.innerHTML = `
+                    <span>${taskText} (${taskTime} minutes)</span>
+                    <button onclick="removeTask(this)">Delete</button>
+                `;
+                tasksList.appendChild(li);
+                taskInput.value = '';
+                taskTimeInput.value = '';
+                calculateTaskTotals();
+            }
+        }
+
+        function removeTask(button) {
+            button.parentElement.remove();
+            calculateTaskTotals();
+        }
+
+        addTaskButton.addEventListener('click', addTask);
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+
+        // Modal handling
+        const infoButton = document.getElementById('infoButton');
+        const settingsButton = document.getElementById('settingsButton');
+        const infoModal = document.getElementById('infoModal');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeInfo = document.getElementById('closeInfo');
+        const closeSettings = document.getElementById('closeSettings');
+
+        infoButton.addEventListener('click', () => {
+            infoModal.style.display = 'block';
+        });
+
+        settingsButton.addEventListener('click', () => {
+            settingsModal.style.display = 'block';
+        });
+
+        closeInfo.addEventListener('click', () => {
+            infoModal.style.display = 'none';
+        });
+
+        closeSettings.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === infoModal) {
+                infoModal.style.display = 'none';
+            }
+            if (e.target === settingsModal) {
+                settingsModal.style.display = 'none';
+            }
+        });
+
+        // Initialize timer
+        initTimer();
+        // Initialize theme
+        updateTheme(false);
+    </script>
+</body></html>
